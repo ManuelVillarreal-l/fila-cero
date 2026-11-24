@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import { ProveedorSesion } from './sesion.jsx';
+import '@fontsource-variable/manrope';
+import '@fontsource-variable/bricolage-grotesque';
 import './estilos.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(

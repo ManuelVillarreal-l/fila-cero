@@ -15,6 +15,10 @@ export class ErrorApi extends Error {
 }
 
 async function pedir(metodo, ruta, cuerpo) {
+  if (import.meta.env.VITE_MOCK === '1') {
+    const { respuestaMock } = await import('./mock.js');
+    return respuestaMock(metodo, ruta, cuerpo);
+  }
   const cabeceras = { Accept: 'application/json' };
   if (cuerpo !== undefined) cabeceras['Content-Type'] = 'application/json';
   if (tokenActual) cabeceras.Authorization = `Bearer ${tokenActual}`;
