@@ -1,0 +1,32 @@
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+
+spring:
+  application:
+    name: filacero
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/filacero}
+      auto-index-creation: true
+  jackson:
+    time-zone: America/Bogota
+    serialization:
+      write-dates-as-timestamps: false
+
+filacero:
+  jwt:
+    # En producción se define con la variable de entorno JWT_SECRET. Este valor solo sirve en local.
+    secreto: ${JWT_SECRET:clave-local-de-desarrollo-fila-cero-cambiar-en-produccion}
+    horas-validez: 12
+  cors:
+    origenes: ${CORS_ORIGENES:http://localhost:5173,http://localhost:4173}
+  # Carga sucursales, trámites, módulos, cuentas de prueba e historial cuando la base está vacía.
+  datos-prueba: ${DATOS_PRUEBA:true}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha

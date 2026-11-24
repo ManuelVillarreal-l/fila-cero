@@ -1,0 +1,18 @@
+# Blueprint de Render: crea el servicio web del backend desde backend/Dockerfile.
+services:
+  - type: web
+    name: filacero-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/estado
+    envVars:
+      - key: MONGODB_URI
+        sync: false        # cadena de conexión de MongoDB Atlas (se pone en el panel de Render)
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGENES
+        value: https://fila-cero.vercel.app,http://localhost:5173
+      - key: DATOS_PRUEBA
+        value: "true"

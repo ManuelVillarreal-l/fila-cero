@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  backend:
+    name: Compilar, probar y validar la API
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Pruebas unitarias (JUnit 5 + Mockito)
+        working-directory: backend
+        run: mvn -B verify
+
+      - name: Publicar reporte de pruebas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-pruebas
+          path: backend/target/surefire-reports
+
+      - name: Levantar la API contra MongoDB
+        working-directory: backend
+        env:
+          MONGODB_URI: mongodb://localhost:27017/filacero
+          DATOS_PRUEBA: "true"
+          JWT_SECRET: clave-de-ci-para-pruebas-de-fila-cero-123456
+        run: |
+          nohup java -jar target/filacero.jar > api.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:8080/api/estado && break
+            sleep 2
+          done
+
+      - name: Pruebas de la API con Postman (Newman)
+        run: |
+          npm install -g newman
+          newman run postman/FilaCero.postman_collection.json \
+            -e postman/FilaCero-Local.postman_environment.json \
+            --reporters cli
+
+      - name: Log de la API
+        if: failure()
+        run: cat backend/api.log
+
+  frontend:
+    name: Compilar el frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - working-directory: frontend
+        run: |
+          npm ci
+          npm run build
